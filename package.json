@@ -1,0 +1,27 @@
+{
+  "name": "dsh-humanizer",
+  "version": "0.1.0",
+  "description": "DSH 真人化插件：虚构世界生活模拟 + PAD 心情 + 风格抑制 + 可编辑面板",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "ai-companion",
+    "live2d"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "scripts": {
+    "dev": "node bin/dev.mjs",
+    "test": "node test/smoke.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT"
+}

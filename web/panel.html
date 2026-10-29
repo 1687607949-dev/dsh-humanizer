@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>姆咪 · 真人化控制台</title>
+  <link rel="stylesheet" href="/dsh-humanizer/assets/panel.css" />
+</head>
+<body>
+  <div class="bg-art" aria-hidden="true"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo"><img src="/dsh-humanizer/assets/mumi-chibi.png" alt="姆咪" onerror="this.parentElement.textContent='姆';this.parentElement.classList.add('fallback')" /></span>
+        <div>
+          <h1>真人化控制台</h1>
+          <p class="sub">虚构世界 · 心情 · 好感 · 表达风格</p>
+        </div>
+        <span class="pill" id="status">加载中</span>
+      </div>
+      <div class="top-actions">
+        <span class="dirty" id="dirty">已保存</span>
+        <button class="btn ghost" id="close">关闭</button>
+        <button class="btn primary" id="save">保存</button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="raise">养成</button>
+      <button class="tab" data-tab="life">生活</button>
+      <button class="tab" data-tab="persona">人设</button>
+      <button class="tab" data-tab="mood">心情</button>
+      <button class="tab" data-tab="events">事件</button>
+      <button class="tab" data-tab="style">风格</button>
+      <button class="tab" data-tab="ai">AI 自改</button>
+      <button class="tab" data-tab="author">作者的话</button>
+      <button class="tab" data-tab="logs">日志</button>
+      <button class="tab" data-tab="settings">设置</button>
+    </nav>
+
+    <main class="content">
+      <section class="tabpane" id="pane-life">
+        <div class="grid2">
+          <div class="card">
+            <h2>城市与环境</h2>
+            <label class="field"><span>城市名（虚构）</span><input id="city-name" type="text" /></label>
+            <label class="field"><span>气候区</span>
+              <select id="climate-zone">
+                <option value="humid_subtropical">湿润亚热带</option>
+                <option value="temperate">温带</option>
+                <option value="cold">寒带</option>
+              </select>
+            </label>
+            <label class="field"><span>住处类型</span><input id="residence-type" type="text" /></label>
+            <label class="field"><span>住处描述</span><textarea id="residence-desc" rows="2"></textarea></label>
+            <label class="field"><span>住处设定（静态，每行一条）</span><textarea id="environment" rows="4"></textarea></label>
+          </div>
+          <div class="card">
+            <h2>天气</h2>
+            <div class="weather-now" id="weather-now">—</div>
+            <label class="field"><span>手动锁定天气</span>
+              <select id="weather-condition">
+                <option value="">跟随世界种子（自动）</option>
+                <option value="晴">晴</option>
+                <option value="多云">多云</option>
+                <option value="阴">阴</option>
+                <option value="小雨">小雨</option>
+                <option value="阵雨">阵雨</option>
+                <option value="雷阵雨">雷阵雨</option>
+                <option value="小雪">小雪</option>
+              </select>
+            </label>
+            <label class="field"><span>锁定温度</span><input id="weather-temp" type="number" min="-30" max="45" /></label>
+            <div class="row">
+              <button class="btn small" id="weather-lock">锁定天气</button>
+              <button class="btn small ghost" id="weather-unlock">解除锁定</button>
+            </div>
+            <p class="hint">默认不接真实天气：由「虚构气候区 + 世界种子」生成，保证同一天可复现。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>此刻环境（动态）</h2>
+          <ul class="env-list" id="env-now"></ul>
+          <p class="hint">住处设定是静态的；这里的光线、声音、空气和活动会随时间、天气、作息变化。</p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>作息</h2>
+            <button class="btn small" id="add-schedule">+ 加一行</button>
+          </div>
+          <table class="table">
+            <thead><tr><th>开始</th><th>结束</th><th>活动</th><th></th></tr></thead>
+            <tbody id="schedule-body"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>今天做了什么</h2>
+            <span class="meta" id="journal-count">—</span>
+          </div>
+          <ul class="journal" id="journal-list"></ul>
+          <div class="row" style="margin-top:10px">
+            <input id="journal-input" type="text" placeholder="记一笔：写完一段代码 / 被主人夸了 / 咖啡洒了" />
+            <button class="btn primary" id="journal-add">记一笔</button>
+          </div>
+          <p class="hint">AI 会按性格和好感度给反应：吐槽或关心。</p>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-persona">
+        <div class="grid2">
+          <div class="card">
+            <h2>角色</h2>
+            <label class="field"><span>名字</span><input id="persona-name" type="text" /></label>
+            <label class="field"><span>身份（每行一条）</span><textarea id="persona-identity" rows="3"></textarea></label>
+          </div>
+          <div class="card">
+            <h2>性格基线</h2>
+            <label class="slider"><span>外向度</span><input id="p-extraversion" type="range" min="0" max="1" step="0.01" /><output></output></label>
+            <label class="slider"><span>神经质</span><input id="p-neuroticism" type="range" min="0" max="1" step="0.01" /><output></output></label>
+            <label class="slider"><span>开放度</span><input id="p-openness" type="range" min="0" max="1" step="0.01" /><output></output></label>
+            <label class="slider"><span>亲和度</span><input id="p-agreeableness" type="range" min="0" max="1" step="0.01" /><output></output></label>
+            <label class="slider"><span>尽责性</span><input id="p-conscientiousness" type="range" min="0" max="1" step="0.01" /><output></output></label>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><h2>喜欢</h2><button class="btn small" id="add-like">+ 加一条</button></div>
+            <table class="table">
+              <thead><tr><th>标签</th><th>强度</th><th></th></tr></thead>
+              <tbody id="likes-body"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>讨厌</h2><button class="btn small" id="add-dislike">+ 加一条</button></div>
+            <table class="table">
+              <thead><tr><th>标签</th><th>强度</th><th></th></tr></thead>
+              <tbody id="dislikes-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>事件池</h2>
+            <button class="btn small" id="add-event">+ 加一条</button>
+          </div>
+          <p class="hint">标签用逗号分隔；稀有度 common / uncommon / rare；时间窗形如 08:00-22:00。</p>
+          <table class="table wide">
+            <thead><tr><th>ID</th><th>标题</th><th>标签</th><th>效价</th><th>强度</th><th>权重</th><th>稀有度</th><th>时间窗</th><th></th></tr></thead>
+            <tbody id="events-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-mood">
+        <div class="grid3">
+          <div class="card pad-card"><span>愉悦 P</span><strong id="pad-p">0</strong><div class="bar"><i id="bar-p"></i></div></div>
+          <div class="card pad-card"><span>唤醒 A</span><strong id="pad-a">0</strong><div class="bar"><i id="bar-a"></i></div></div>
+          <div class="card pad-card"><span>掌控 D</span><strong id="pad-d">0</strong><div class="bar"><i id="bar-d"></i></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>当前心情：<span id="mood-label">—</span></h2>
+            <button class="btn small ghost" id="mood-reset">重置为平静</button>
+          </div>
+          <p class="hint" id="mood-meta"></p>
+          <h3>今天的事件</h3>
+          <ul class="timeline" id="mood-events"></ul>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-events">
+        <div class="card">
+          <div class="card-head">
+            <h2>今日世界</h2>
+            <div class="row">
+              <button class="btn small ghost" id="reroll">今天重开</button>
+              <button class="btn small" id="refresh-world">刷新</button>
+            </div>
+          </div>
+          <p class="meta" id="world-meta">—</p>
+          <ul class="event-list" id="today-events"></ul>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-style">
+        <div class="card">
+          <h2>表达风格</h2>
+          <label class="check"><input id="style-enabled" type="checkbox" /><span>启用真人化（关闭后完全回退 DSH 原行为）</span></label>
+          <div class="grid2">
+            <label class="field"><span>闲聊最多句数</span><input id="style-sentences" type="number" min="1" max="6" /></label>
+            <label class="field"><span>工作回复开头情绪句</span><select id="style-work-open"><option value="true">保留一句</option><option value="false">不保留</option></select></label>
+          </div>
+          <label class="slider"><span>粗口浓度</span><input id="style-profanity" type="range" min="0" max="1" step="0.01" /><output></output></label>
+          <label class="slider"><span>主动程度</span><input id="style-initiative" type="range" min="0" max="1" step="0.01" /><output></output></label>
+          <label class="slider"><span>环境提及频率</span><input id="style-env" type="range" min="0" max="1" step="0.01" /><output></output></label>
+          <p class="hint">风格只影响表达，不改变任务、事实、代码、命令、路径和报错原文。</p>
+        </div>
+      </section>
+
+      <section class="tabpane active" id="pane-raise">
+        <div class="card overview">
+          <div class="ov-main">
+            <img class="ov-avatar" id="ov-avatar" src="/dsh-humanizer/avatar?name=mumi.png" alt="姆咪" onerror="this.style.display='none'" />
+            <div class="ov-id">
+              <h2 id="ov-name">姆咪</h2>
+              <p class="meta" id="ov-sub">—</p>
+              <div class="ov-bars">
+                <div class="ov-bar"><span>好感</span><div class="bar"><i id="ov-aff-bar"></i></div><b id="ov-aff">0</b></div>
+                <div class="ov-bar"><span>了解</span><div class="bar"><i id="ov-fam-bar"></i></div><b id="ov-fam">0</b></div>
+              </div>
+            </div>
+            <div class="ov-mood"><span>此刻心情</span><strong id="ov-mood">—</strong><small id="ov-tier">—</small></div>
+          </div>
+          <div class="aff-fx" id="aff-fx" aria-hidden="true"></div>
+          <div class="ov-label">她怎么看你</div>
+          <blockquote class="quote" id="ov-view">—</blockquote>
+          <div class="ov-label">内心戏（点开看）</div>
+          <div class="inner-lock" id="inner-lock">
+            <div class="inner-content" id="ov-inner">—</div>
+            <button class="inner-cover" id="inner-cover" type="button">—</button>
+          </div>
+          <div class="inner-wish hidden" id="inner-wish">
+            <p id="wish-line">—</p>
+            <div class="row" id="wish-actions"></div>
+          </div>
+          <div class="ov-stats" id="ov-stats">—</div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <h2>形象</h2>
+            <div class="avatar-row">
+              <img class="ov-avatar" id="avatar-preview" src="/dsh-humanizer/avatar?name=mumi.png" alt="头像" onerror="this.style.display='none'" />
+              <div class="avatar-controls">
+                <label class="field"><span>选择形象</span><select id="avatar-select"></select></label>
+                <label class="field"><span>上传自定义 OC（方形 512×512 最好）</span><input id="avatar-file" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+              </div>
+            </div>
+            <div class="grid2" style="margin-top:10px">
+              <label class="field"><span>背景（成熟体）</span><select id="background-select"></select></label>
+              <label class="field"><span>上传背景</span><input id="background-file" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+            </div>
+            <p class="hint">想换成自己的形象？去 GPT，把鲸鱼娘的外观发给它，加上你的 OC 元素让它改一张方图，再上传到这里就行。背景也是同一套做法。</p>
+          </div>
+          <div class="card">
+            <h2>关系</h2>
+            <p class="meta" id="raise-affection-meta">—</p>
+            <p class="hint">好感由互动算法决定；想手动校准，去「设置」。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>用户画像</h2>
+            <button class="btn small" id="profile-refresh">刷新草稿</button>
+          </div>
+          <p class="meta" id="profile-style">—</p>
+          <p class="inner" id="profile-summary">—</p>
+          <div class="row" id="profile-traits"></div>
+          <ul class="logs" id="profile-suggestions"></ul>
+        </div>
+
+        <div class="card">
+          <h2>表达预览</h2>
+          <blockquote class="quote" id="expression-line">—</blockquote>
+          <h3>拒绝闲聊时</h3>
+          <blockquote class="quote danger" id="refusal-line">—</blockquote>
+          <p class="hint">好感只改温度和距离，不改底色；工作/技术请求永远不拒绝。</p>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-ai">
+        <div class="card">
+          <h2>让人设提示词自己改设置</h2>
+          <p class="hint">粘贴人设（或读 SOUL.md）→ 预览推导出的补丁 → 应用。只会改性格底色、性格基线、风格和偏好，不会动事件池和作息。</p>
+          <textarea id="ai-persona" rows="12" placeholder="把人设提示词粘贴到这里……"></textarea>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="ai-preview">预览变更</button>
+            <button class="btn primary" id="ai-apply">应用</button>
+            <button class="btn ghost" id="ai-load-soul">读取 SOUL.md</button>
+          </div>
+          <h3>推导结果</h3>
+          <pre class="prompt" id="ai-diff">—</pre>
+        </div>
+        <div class="card">
+          <h2>AI 修改记录</h2>
+          <ul class="logs" id="ai-logs"></ul>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-author">
+        <div class="card">
+          <h2>作者的话</h2>
+          <p class="inner" id="author-note-view">—</p>
+          <p class="meta" id="author-promo-view">—</p>
+          <h3>账号</h3>
+          <ul class="logs" id="author-links-view"></ul>
+          <p class="hint">固定内容，面板不可编辑；要改直接改 `data/author.json`。</p>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-settings">
+        <div class="grid2">
+          <div class="card">
+            <h2>关系校准</h2>
+            <p class="hint">手动覆盖算法值；改完点顶部「保存」生效。</p>
+            <label class="field"><span>性格底色</span><select id="archetype"></select></label>
+            <label class="slider"><span>好感度</span><input id="affection" type="range" min="-100" max="100" step="1" /><output></output></label>
+            <label class="slider"><span>了解度</span><input id="familiarity" type="range" min="0" max="100" step="1" /><output></output></label>
+            <p class="meta" id="affection-tier">—</p>
+          </div>
+          <div class="card">
+            <h2>算法状态</h2>
+            <p class="meta" id="settings-affection-status">—</p>
+            <p class="hint">好感上限由互动结构决定：样本 &lt; 8 或情感占比 &lt; 15% → 60；&lt; 30% → 80；否则 100。</p>
+            <label class="field"><span>亲密风格</span>
+              <select id="intimacy-style">
+                <option value="normal">常规（高好感正常亲热）</option>
+                <option value="degradation">喜欢被厌恶 / 贬低</option>
+                <option value="shy">害羞别扭</option>
+              </select>
+            </label>
+            <label class="field"><span>癖好 / 偏好备注（自己写，或让 AI 补）</span><textarea id="pref-note" rows="3"></textarea></label>
+            <label class="field"><span>喜欢（逗号分隔）</span><input id="pref-likes" type="text" placeholder="温柔, 幽默, 亲亲" /></label>
+            <label class="field"><span>讨厌（逗号分隔）</span><input id="pref-dislikes" type="text" placeholder="敷衍, 被忽视" /></label>
+            <button class="btn small" id="intimacy-pref-save">保存偏好</button>
+            <button class="btn small ghost" id="onboarding-restart">重新走一遍引导</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tabpane" id="pane-logs">
+        <div class="card">
+          <div class="card-head">
+            <h2>注入预览</h2>
+            <button class="btn small ghost" id="refresh-prompt">刷新</button>
+          </div>
+          <pre class="prompt" id="prompt-preview">—</pre>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>最近日志</h2>
+            <button class="btn small ghost" id="refresh-logs">刷新</button>
+          </div>
+          <ul class="logs" id="logs"></ul>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="ob-overlay" id="onboarding" aria-hidden="true">
+    <div class="ob-card">
+      <div class="ob-left">
+        <img id="ob-avatar" src="/dsh-humanizer/avatar?name=mumi.png" alt="姆咪" />
+        <p class="ob-name">姆咪 · 第一次设置</p>
+      </div>
+      <div class="ob-right">
+        <div class="ob-head">
+          <span id="ob-step">1 / 8</span>
+          <span class="ob-hint">9 道核心题 · 可搜索 · 可自己写</span>
+        </div>
+        <div class="ob-speech" id="ob-speech"></div>
+        <div class="ob-options" id="ob-options"></div>
+        <div class="ob-actions">
+          <button class="btn ghost" id="ob-skip">以后再说</button>
+          <div class="row" style="gap:8px">
+            <button class="btn ghost" id="ob-back">上一步</button>
+            <button class="btn primary" id="ob-next">下一步</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/dsh-humanizer/assets/panel.js"></script>
+</body>
+</html>

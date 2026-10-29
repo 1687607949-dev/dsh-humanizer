@@ -1,0 +1,6 @@
+# dsh-humanizer —— DSH bundle patch
+# 这是插件的挂载声明：DSH 启动时按 bundle 层栈叠加，把插件插入 profile 配置树。
+# 安装：把本目录链接/复制到 profile 的 node_modules，并让 profile 的 bundles 包含 dsh-humanizer。
+- insert:
+    - id: dsh-humanizer
+      name: dsh-humanizer
